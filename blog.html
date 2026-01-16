@@ -35,7 +35,7 @@
         <div class="blog-hero-left">
           <h1>Blog do Fuxico</h1>
           <p class="blog-lead">
-            Dicas rápidas, temas de conversação e curiosidades — pra ler leve, praticar e voltar pro fuxico com ideias novas.
+            Conteúdos leves pra praticar idiomas com mais confiança: conversação, vocabulário e temas pra fuxicar.
           </p>
 
           <div class="blog-cta-row">
@@ -43,11 +43,6 @@
               <span aria-hidden="true">🔎</span>
               <input id="searchInput" type="search" placeholder="Buscar por título ou conteúdo..." autocomplete="off" />
             </div>
-
-            <a class="blog-pill" href="#admin" id="adminLink" style="text-decoration:none;">
-              <span aria-hidden="true">🔐</span>
-              <strong>Admin</strong>
-            </a>
 
             <div class="blog-pill" title="Filtro">
               <span aria-hidden="true">🏷️</span>
@@ -60,11 +55,11 @@
 
         <div class="blog-hero-right">
           <div class="card blog-hero-card">
-            <h3 class="blog-hero-card-title">Tudo integrado</h3>
+            <h3 class="blog-hero-card-title">Novos posts</h3>
             <p class="blog-hero-card-text">
-              Público vê e lê. Moderador loga em <strong>blog.html#admin</strong> para criar e editar.
+              Acompanhe as novidades e use os temas como ponto de partida para os encontros.
             </p>
-            <a class="cta blog-hero-card-cta" href="#admin">Entrar como moderador</a>
+            <a class="cta blog-hero-card-cta" href="index.html">Voltar ao início</a>
           </div>
         </div>
       </div>
@@ -82,7 +77,7 @@
       </div>
 
       <p id="emptyState" class="blog-empty" style="display:none;">
-        Ainda não tem posts publicados.
+        Ainda não há posts publicados.
       </p>
     </section>
 
@@ -114,49 +109,35 @@
             <h4>Sumário</h4>
             <ol class="toc" id="toc"></ol>
           </div>
-
-          <div class="aside-card reveal" id="adminQuickCard" style="display:none;">
-            <h4>Moderador</h4>
-            <p class="aside-text">Editar este post no painel.</p>
-            <a class="cta aside-cta" href="#admin">Abrir Admin</a>
-          </div>
         </aside>
       </div>
     </section>
 
-    <!-- VIEW: ADMIN (PRIVADO) -->
+    <!-- VIEW: ADMIN (PRIVADO) - NÃO aparece no público (só em #admin) -->
     <section class="section" id="viewAdmin" style="display:none;">
       <div class="card" style="border-radius:26px;">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
-          <h2 style="margin:0;color:#1e3a8a;">Painel do Moderador</h2>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="blog-btn" id="seedBtn" type="button" style="background:#1e3a8a;">Criar 3 posts de teste</button>
-            <button class="blog-btn" id="logoutBtn" type="button" style="background:#111827;">Sair</button>
-          </div>
+          <h2 style="margin:0;color:#1e3a8a;">Painel</h2>
+          <button class="blog-btn" id="logoutBtn" type="button" style="background:#111827;">Sair</button>
         </div>
 
-        <!-- LOGIN (aparece quando não está logado) -->
+        <!-- LOGIN -->
         <div id="loginBox" style="margin-top:14px;display:none;">
-          <p style="margin:0 0 10px;color:rgba(11,18,32,.7);">
-            Entre com seu usuário/senha de moderador.
-          </p>
-
           <div class="blog-cta-row" style="margin-top:0;">
             <div class="blog-search" style="flex:1 1 240px;">
               <span aria-hidden="true">👤</span>
-              <input id="loginUser" type="text" placeholder='Usuário (ex: "blogpost")' autocomplete="username" />
+              <input id="loginUser" type="text" placeholder="Usuário" autocomplete="username" />
             </div>
             <div class="blog-search" style="flex:1 1 240px;">
               <span aria-hidden="true">🔑</span>
-              <input id="loginPass" type="password" placeholder='Senha (ex: "adminblog")' autocomplete="current-password" />
+              <input id="loginPass" type="password" placeholder="Senha" autocomplete="current-password" />
             </div>
             <button class="blog-btn" id="loginBtn" type="button">Entrar</button>
           </div>
-
           <p id="loginMsg" style="margin:10px 0 0;color:rgba(11,18,32,.7);"></p>
         </div>
 
-        <!-- ADMIN UI (aparece quando logado) -->
+        <!-- EDITOR -->
         <div id="adminBox" style="margin-top:14px;display:none;">
           <div style="display:grid;grid-template-columns: 1fr 1fr; gap: 14px;">
             <div class="blog-search" style="border-radius:18px;">
@@ -181,7 +162,7 @@
 
             <div class="blog-search" style="grid-column: 1 / -1; border-radius:18px;">
               <span aria-hidden="true">🏷️</span>
-              <input id="aTags" type="text" placeholder='Tags separadas por vírgula (ex: vocabulario, gramatica)' />
+              <input id="aTags" type="text" placeholder="Tags separadas por vírgula" />
             </div>
 
             <div class="blog-pill" style="grid-column: 1 / -1; justify-content:space-between;">
@@ -193,11 +174,8 @@
             </div>
 
             <div style="grid-column: 1 / -1;">
-              <label style="display:block;margin:6px 0 8px;font-weight:700;color:rgba(11,18,32,.75);">Conteúdo (HTML simples)</label>
+              <label style="display:block;margin:6px 0 8px;font-weight:700;color:rgba(11,18,32,.75);">Conteúdo (HTML)</label>
               <textarea id="aContent" rows="14" style="width:100%;border-radius:18px;border:1px solid rgba(30,58,138,.14);padding:14px;font-family:inherit;line-height:1.6;"></textarea>
-              <p style="margin:8px 0 0;color:rgba(11,18,32,.6);font-size:12px;">
-                Dica: use &lt;h2&gt; e &lt;h3&gt; para o sumário automático funcionar.
-              </p>
             </div>
           </div>
 
@@ -205,15 +183,12 @@
             <button class="blog-btn" id="newBtn" type="button" style="background:#1e3a8a;">Novo</button>
             <button class="blog-btn" id="saveBtn" type="button">Salvar</button>
             <button class="blog-btn" id="deleteBtn" type="button" style="background:#111827;">Excluir</button>
-            <a class="blog-btn" href="#" id="previewBtn" style="background:#0f766e;text-decoration:none;display:inline-flex;align-items:center;">Pré-visualizar</a>
           </div>
 
           <hr style="margin:18px 0;border:0;border-top:1px solid rgba(2,6,23,.08);" />
 
-          <h3 style="margin:0;color:#1e3a8a;">Seus posts</h3>
-          <p style="margin:6px 0 12px;color:rgba(11,18,32,.65);">Clique para carregar e editar.</p>
-
-          <div id="adminList" style="display:grid;gap:10px;"></div>
+          <h3 style="margin:0;color:#1e3a8a;">Posts</h3>
+          <div id="adminList" style="display:grid;gap:10px;margin-top:12px;"></div>
 
           <p id="adminMsg" style="margin:12px 0 0;color:rgba(11,18,32,.7);"></p>
         </div>
