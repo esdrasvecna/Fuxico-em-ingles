@@ -1,620 +1,443 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {
-  getFirestore, collection, doc, getDoc, getDocs, query, where, limit,
-  setDoc, updateDoc, deleteDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import {
-  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCafN3RYgChH-Xl2qACLbAes5Ftmwvssug",
-  authDomain: "fuxicopoliglota.firebaseapp.com",
-  projectId: "fuxicopoliglota",
-  storageBucket: "fuxicopoliglota.firebasestorage.app",
-  messagingSenderId: "878407521160",
-  appId: "1:878407521160:web:77f24cbb1e24b32acc203d",
-  measurementId: "G-DJ533FQQPT"
-};
-
-const USERNAME_TO_EMAIL_DOMAIN = "fuxico.local";
-const ALLOWED_USERNAMES = new Set(["blogpost"]);
-const POSTS_COL = "posts";
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-const el = (id) => document.getElementById(id);
-const show = (node, yes) => { if (node) node.style.display = yes ? "" : "none"; };
-
-const viewList = el("viewList");
-const listSection = el("listSection");
-const postsGrid = el("postsGrid");
-const loadMoreBtn = el("loadMoreBtn");
-const searchInput = el("searchInput");
-const chipRow = el("chipRow");
-const activeTagEl = el("activeTag");
-const emptyState = el("emptyState");
-
-const viewPost = el("viewPost");
-const postMeta = el("postMeta");
-const postTitle = el("postTitle");
-const postExcerpt = el("postExcerpt");
-const postCover = el("postCover");
-const postCoverImg = el("postCoverImg");
-const postContent = el("postContent");
-const toc = el("toc");
-const readProgress = el("readProgress");
-const backToListBtn = el("backToListBtn");
-
-const viewAdmin = el("viewAdmin");
-const loginBox = el("loginBox");
-const adminBox = el("adminBox");
-const loginUser = el("loginUser");
-const loginPass = el("loginPass");
-const loginBtn = el("loginBtn");
-const loginMsg = el("loginMsg");
-const logoutBtn = el("logoutBtn");
-
-const aTitle = el("aTitle");
-const aSlug = el("aSlug");
-const aExcerpt = el("aExcerpt");
-const aCoverUrl = el("aCoverUrl");
-const aTags = el("aTags");
-const aStatus = el("aStatus");
-const aContent = el("aContent");
-
-const newBtn = el("newBtn");
-const saveBtn = el("saveBtn");
-const deleteBtn = el("deleteBtn");
-const adminList = el("adminList");
-const adminMsg = el("adminMsg");
-
-let isModerator = false;
-
-// Público: carrega tudo e pagina no client (sem índice)
-let allPublished = [];
-let visibleCount = 9;
-let activeTag = "Tudo";
-let searchTerm = "";
-
-// Admin editor
-let currentEditingId = null;
-
-function safeText(s){ return (s ?? "").toString(); }
-function slugify(input) {
-  return safeText(input)
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-}
-function tagsFromInput(v) {
-  return safeText(v).split(",").map(t => t.trim()).filter(Boolean);
-}
-function formatDate(ts) {
-  if (!ts) return "";
-  try {
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString("pt-BR", { day:"2-digit", month:"short", year:"numeric" });
-  } catch { return ""; }
-}
-function toMillisMaybe(ts){
-  if (!ts) return 0;
-  try {
-    if (typeof ts === "number") return ts;
-    if (ts.toMillis) return ts.toMillis();
-    if (ts.toDate) return ts.toDate().getTime();
-    const d = new Date(ts);
-    return isNaN(d.getTime()) ? 0 : d.getTime();
-  } catch { return 0; }
+:root{
+  --b-ink: #0b1220;
+  --b-muted: rgba(11,18,32,.68);
+  --b-primary: #1e3a8a;
+  --b-accent: #dc2626;
+  --b-shadow: 0 18px 40px rgba(0,0,0,.08);
+  --b-shadow-soft: 0 10px 30px rgba(0,0,0,.06);
+  --b-radius: 22px;
 }
 
-function setupReveal() {
-  const targets = document.querySelectorAll(".reveal");
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("is-in"); });
-  }, { threshold: 0.12 });
-  targets.forEach(t => io.observe(t));
+.blog-shell{
+  padding: 0 10% 70px;
 }
 
-function parseRoute() {
-  const h = (location.hash || "").replace(/^#/, "").trim();
-  if (!h) return { name: "list" };
-  if (h === "admin") return { name: "admin" };
-  if (h.startsWith("post/")) return { name: "post", slug: h.slice(5) };
-  return { name: "list" };
+/* HERO */
+.blog-hero{
+  border-radius: 26px;
+  background: linear-gradient(120deg, rgba(219,234,254,.88), rgba(255,255,255,.95));
+  box-shadow: var(--b-shadow-soft);
+  border: 1px solid rgba(2,6,23,.06);
+  overflow: hidden;
 }
 
-async function go(route) {
-  show(viewList, false);
-  show(listSection, false);
-  show(viewPost, false);
-  show(viewAdmin, false);
-  readProgress.style.width = "0%";
+.blog-hero-inner{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 22px;
+  align-items: center;
+}
 
-  if (route.name === "list") {
-    show(viewList, true);
-    show(listSection, true);
-    await ensurePublicLoaded();
+.blog-hero-left h1{
+  margin: 0;
+  font-size: clamp(30px, 4vw, 52px);
+  color: var(--b-primary);
+  letter-spacing: -0.02em;
+}
+
+.blog-lead{
+  margin: 10px 0 0;
+  font-size: clamp(14px, 1.2vw, 18px);
+  color: var(--b-muted);
+  line-height: 1.65;
+  max-width: 62ch;
+}
+
+.blog-cta-row{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+  align-items: center;
+}
+
+.blog-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.82);
+  border: 1px solid rgba(30,58,138,.12);
+  box-shadow: var(--b-shadow-soft);
+}
+
+.blog-search{
+  flex: 1 1 260px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(30,58,138,.14);
+  box-shadow: var(--b-shadow-soft);
+}
+
+.blog-search input{
+  border:0;
+  outline:0;
+  background:transparent;
+  width:100%;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.blog-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:16px;
+}
+
+.blog-chip{
+  cursor:pointer;
+  user-select:none;
+  padding:10px 14px;
+  border-radius:999px;
+  border: 1px solid rgba(30,58,138,.14);
+  background: rgba(255,255,255,.78);
+  color: var(--b-primary);
+  font-weight: 600;
+  transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+}
+.blog-chip:hover{
+  transform: translateY(-2px);
+  box-shadow: var(--b-shadow-soft);
+}
+.blog-chip[aria-pressed="true"]{
+  background: rgba(30,58,138,.12);
+  border-color: rgba(30,58,138,.22);
+}
+
+/* Card do hero */
+.blog-hero-card{
+  text-align:left;
+  border-radius: 26px;
+  overflow:hidden;
+}
+.blog-hero-card-title{ margin:0; color: var(--b-primary); }
+.blog-hero-card-text{ margin: 10px 0 0; color: rgba(11,18,32,.72); line-height: 1.6; }
+.blog-hero-card-cta{ margin-top: 16px; }
+
+/* GRID: mais alinhado */
+.blog-grid{
+  margin-top: 22px;
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+  align-items: stretch;
+}
+
+/* CARD: premium + consistente */
+.post-card{
+  position:relative;
+  overflow:hidden;
+  background: #fff;
+  border-radius: var(--b-radius);
+  box-shadow: var(--b-shadow-soft);
+  border: 1px solid rgba(2,6,23,.06);
+  transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease;
+  display:flex;
+  flex-direction:column;
+  min-height: 380px;
+}
+.post-card:hover{
+  transform: translateY(-7px);
+  box-shadow: var(--b-shadow);
+}
+
+/* capa padronizada */
+.post-cover{
+  height: 180px;
+  background: linear-gradient(120deg, rgba(30,58,138,.12), rgba(220,38,38,.10));
+}
+.post-cover img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transform: scale(1.02);
+  transition: transform .5s ease;
+}
+.post-card:hover .post-cover img{ transform: scale(1.07); }
+
+/* corpo com alinhamento */
+.post-body{
+  padding: 16px 16px 18px;
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  flex:1;
+}
+
+.post-meta{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  color: rgba(11,18,32,.58);
+  font-size: 12px;
+  align-items:center;
+}
+
+.post-title{
+  margin: 0;
+  font-size: 18px;
+  letter-spacing:-.01em;
+  color: var(--b-ink);
+  line-height:1.25;
+  display:-webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow:hidden;
+  min-height: 46px; /* deixa títulos alinhados */
+}
+
+.post-excerpt{
+  margin:0;
+  color: rgba(11,18,32,.70);
+  font-size: 13.5px;
+  line-height:1.65;
+  display:-webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow:hidden;
+  min-height: 68px;
+}
+
+.post-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:auto; /* empurra tags pro fim e alinha todos */
+}
+
+.post-tag{
+  font-size: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(30,58,138,.08);
+  color: var(--b-primary);
+  font-weight:600;
+  border: 1px solid rgba(30,58,138,.10);
+}
+
+/* link invisível */
+.post-link{
+  position:absolute;
+  inset:0;
+  text-indent: -9999px;
+}
+
+/* Reveal */
+.reveal{
+  opacity:0;
+  transform: translateY(18px) scale(.985);
+  filter: blur(6px);
+}
+.reveal.is-in{
+  opacity:1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1), filter .7s ease;
+}
+
+/* Skeleton */
+.skeleton{
+  position:relative;
+  overflow:hidden;
+  background: #fff;
+  border-radius: var(--b-radius);
+  border: 1px solid rgba(2,6,23,.06);
+  box-shadow: var(--b-shadow-soft);
+}
+.skeleton .sk-cover{height:180px;background:#e5e7eb;}
+.skeleton .sk-body{padding:16px;}
+.skeleton .sk-line{height:12px;background:#e5e7eb;border-radius:999px;margin-top:12px;}
+.skeleton .sk-line.w40{width:40%;}
+.skeleton .sk-line.w65{width:65%;}
+.skeleton .sk-line.w85{width:85%;}
+.skeleton::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  transform: translateX(-120%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer{to{transform: translateX(120%);}}
+
+/* Botão */
+.blog-actions{display:flex;justify-content:center;margin: 22px 0 0;}
+.blog-btn{
+  appearance:none;
+  border:0;
+  cursor:pointer;
+  background: var(--b-accent);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: 0 14px 30px rgba(220,38,38,.22);
+  transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+}
+.blog-btn:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(220,38,38,.26);
+}
+.blog-btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  filter: grayscale(.2);
+  transform:none;
+  box-shadow:none;
+}
+
+.blog-empty{ text-align:center; color: rgba(11,18,32,.65); margin: 14px 0 0; }
+
+/* POST PAGE: mais “editorial” */
+.read-progress{
+  position:fixed;
+  left:0;
+  top:0;
+  height:3px;
+  width:0;
+  background: var(--b-accent);
+  z-index: 9999;
+}
+
+.post-shell{ padding: 0 10% 70px; }
+
+.post-wrap{
+  display:grid;
+  grid-template-columns: 1fr 320px;
+  gap: 22px;
+  align-items:start;
+}
+
+.article{
+  background: #fff;
+  border-radius: 26px;
+  box-shadow: var(--b-shadow-soft);
+  border: 1px solid rgba(2,6,23,.06);
+  overflow:hidden;
+}
+
+/* Cabeçalho do artigo com “hero” */
+.article-head{
+  padding: 26px 26px 0;
+  position:relative;
+}
+.article-head::before{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:0;
+  height: 150px;
+  background: linear-gradient(120deg, rgba(30,58,138,.12), rgba(220,38,38,.08));
+  pointer-events:none;
+}
+.article-head > *{ position:relative; }
+
+.article h1{
+  margin: 10px 0 0;
+  color:var(--b-ink);
+  font-size: clamp(26px, 3vw, 42px);
+  letter-spacing:-.02em;
+}
+.article .sub{
+  margin: 10px 0 0;
+  color: rgba(11,18,32,.70);
+  line-height:1.75;
+  max-width: 70ch;
+}
+
+.article-cover{
+  margin-top:18px;
+  border-radius: 18px;
+  overflow:hidden;
+  box-shadow: 0 18px 40px rgba(0,0,0,.10);
+}
+.article-cover img{
+  width:100%;
+  display:block;
+  max-height: 420px;
+  object-fit:cover;
+}
+
+.article-body{
+  padding: 18px 26px 26px;
+  color: var(--b-ink);
+  max-width: 78ch;
+}
+.article-body :is(p,li){
+  color: rgba(11,18,32,.84);
+  line-height:1.9;
+}
+.article-body h2{
+  margin-top: 28px;
+  color: var(--b-primary);
+  letter-spacing:-.01em;
+}
+.article-body h3{
+  margin-top: 20px;
+  color: var(--b-ink);
+}
+.article-body a{ color: var(--b-primary); font-weight:700; text-decoration:none; }
+.article-body a:hover{ text-decoration: underline; }
+
+.article-body blockquote{
+  margin: 18px 0;
+  padding: 14px 16px;
+  border-left: 4px solid rgba(30,58,138,.35);
+  background: rgba(30,58,138,.06);
+  border-radius: 16px;
+}
+
+.aside{
+  position: sticky;
+  top: 98px;
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+}
+
+.aside-card{
+  background: rgba(255,255,255,.9);
+  border: 1px solid rgba(30,58,138,.12);
+  border-radius: var(--b-radius);
+  box-shadow: var(--b-shadow-soft);
+  padding: 14px;
+  backdrop-filter: blur(8px);
+}
+.aside-card h4{ margin:0 0 8px; color: var(--b-primary); }
+
+.toc{ margin:0; padding-left: 18px; }
+.toc li{ margin: 8px 0; }
+.toc a{ color: rgba(11,18,32,.8); font-weight:600; text-decoration:none; }
+.toc a:hover{ color: var(--b-primary); text-decoration: underline; }
+
+/* motion prefs */
+@media (prefers-reduced-motion: reduce){
+  .reveal, .reveal.is-in{
+    transition:none !important;
+    transform:none !important;
+    filter:none !important;
+    opacity:1 !important;
   }
-  if (route.name === "post") {
-    show(viewPost, true);
-    await loadPostBySlug(route.slug);
-  }
-  if (route.name === "admin") {
-    show(viewAdmin, true);
-    await refreshAdminUI();
-  }
-
-  setupReveal();
-}
-
-window.addEventListener("hashchange", () => go(parseRoute()));
-
-async function ensurePublicLoaded() {
-  if (allPublished.length) {
-    renderChips(allPublished);
-    renderGrid();
-    return;
-  }
-
-  loadMoreBtn.disabled = true;
-  loadMoreBtn.textContent = "Carregando…";
-  show(emptyState, false);
-
-  try {
-    // Sem orderBy => sem índice obrigatório
-    const q = query(
-      collection(db, POSTS_COL),
-      where("status", "==", "published"),
-      limit(200)
-    );
-
-    const snap = await getDocs(q);
-    allPublished = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    // Ordena no client por publishedAt -> updatedAt -> createdAt
-    allPublished.sort((a,b) => {
-      const am = toMillisMaybe(a.publishedAt) || toMillisMaybe(a.updatedAt) || toMillisMaybe(a.createdAt);
-      const bm = toMillisMaybe(b.publishedAt) || toMillisMaybe(b.updatedAt) || toMillisMaybe(b.createdAt);
-      return bm - am;
-    });
-
-    postsGrid.innerHTML = "";
-
-    if (!allPublished.length) {
-      show(emptyState, true);
-      emptyState.textContent = "Ainda não há posts publicados.";
-      loadMoreBtn.disabled = true;
-      loadMoreBtn.textContent = "Sem posts";
-      return;
-    }
-
-    renderChips(allPublished);
-    renderGrid();
-
-    loadMoreBtn.disabled = false;
-    loadMoreBtn.textContent = "Carregar mais";
-  } catch (err) {
-    console.error(err);
-    postsGrid.innerHTML = "";
-    show(emptyState, true);
-    emptyState.textContent = "Não foi possível carregar os posts (verifique Rules/coleção/campos).";
-    loadMoreBtn.disabled = true;
-    loadMoreBtn.textContent = "Erro";
-  }
-}
-
-function renderChips(posts) {
-  const tags = [...new Set(posts.flatMap(p => Array.isArray(p.tags) ? p.tags : []))].slice(0, 20);
-  chipRow.innerHTML = "";
-
-  const mk = (label) => {
-    const b = document.createElement("button");
-    b.className = "blog-chip";
-    b.type = "button";
-    b.textContent = label;
-    b.setAttribute("aria-pressed", label === activeTag ? "true" : "false");
-    b.addEventListener("click", () => {
-      activeTag = label;
-      activeTagEl.textContent = label;
-      [...chipRow.querySelectorAll(".blog-chip")]
-        .forEach(x => x.setAttribute("aria-pressed", x.textContent === activeTag ? "true" : "false"));
-      visibleCount = 9;
-      renderGrid();
-    });
-    return b;
-  };
-
-  chipRow.appendChild(mk("Tudo"));
-  tags.forEach(t => chipRow.appendChild(mk(t)));
-}
-
-function passesFilters(p) {
-  const title = safeText(p.title).toLowerCase();
-  const excerpt = safeText(p.excerpt).toLowerCase();
-  const content = safeText(p.contentHtml).toLowerCase();
-
-  const okTag = (activeTag === "Tudo") || (Array.isArray(p.tags) && p.tags.includes(activeTag));
-  const okSearch = !searchTerm || title.includes(searchTerm) || excerpt.includes(searchTerm) || content.includes(searchTerm);
-  return okTag && okSearch;
-}
-
-function renderGrid() {
-  const filtered = allPublished.filter(passesFilters);
-  postsGrid.innerHTML = "";
-
-  if (!filtered.length) {
-    show(emptyState, true);
-    emptyState.textContent = "Nenhum post encontrado com esse filtro/busca.";
-    loadMoreBtn.disabled = true;
-    loadMoreBtn.textContent = "Sem resultados";
-    return;
-  }
-
-  show(emptyState, false);
-
-  const page = filtered.slice(0, visibleCount);
-  page.forEach(p => postsGrid.appendChild(renderCard(p)));
-
-  if (visibleCount >= filtered.length) {
-    loadMoreBtn.disabled = true;
-    loadMoreBtn.textContent = "Fim";
-  } else {
-    loadMoreBtn.disabled = false;
-    loadMoreBtn.textContent = "Carregar mais";
-  }
-}
-
-function renderCard(p) {
-  const card = document.createElement("div");
-  card.className = "post-card reveal";
-
-  const cover = document.createElement("div");
-  cover.className = "post-cover";
-  if (p.coverUrl) {
-    const img = document.createElement("img");
-    img.loading = "lazy";
-    img.src = p.coverUrl;
-    img.alt = p.title || "Capa do post";
-    cover.appendChild(img);
-  }
-  card.appendChild(cover);
-
-  const body = document.createElement("div");
-  body.className = "post-body";
-
-  const meta = document.createElement("div");
-  meta.className = "post-meta";
-  const dt = formatDate(p.publishedAt) || formatDate(p.updatedAt) || "";
-  meta.textContent = dt ? `📅 ${dt}` : "📌";
-  body.appendChild(meta);
-
-  const h = document.createElement("h3");
-  h.className = "post-title";
-  h.textContent = p.title || "Sem título";
-  body.appendChild(h);
-
-  const ex = document.createElement("p");
-  ex.className = "post-excerpt";
-  ex.textContent = p.excerpt || "Clique para ler.";
-  body.appendChild(ex);
-
-  const tags = document.createElement("div");
-  tags.className = "post-tags";
-  (Array.isArray(p.tags) ? p.tags.slice(0, 3) : []).forEach(t => {
-    const s = document.createElement("span");
-    s.className = "post-tag";
-    s.textContent = t;
-    tags.appendChild(s);
-  });
-  body.appendChild(tags);
-
-  card.appendChild(body);
-
-  const slug = p.slug || p.id;
-  const a = document.createElement("a");
-  a.className = "post-link";
-  a.href = `#post/${encodeURIComponent(slug)}`;
-  a.textContent = "Abrir post";
-  card.appendChild(a);
-
-  return card;
-}
-
-async function loadPostBySlug(slug) {
-  const clean = decodeURIComponent(safeText(slug)).trim();
-  if (!clean) { location.hash = ""; return; }
-
-  postTitle.textContent = "Carregando…";
-  postExcerpt.textContent = "";
-  postMeta.textContent = "Carregando…";
-  postContent.innerHTML = "<p>Carregando conteúdo…</p>";
-  toc.innerHTML = "";
-  show(postCover, false);
-
-  try {
-    // tenta por docId
-    let snap = await getDoc(doc(db, POSTS_COL, clean));
-    let data = snap.exists() ? { id: snap.id, ...snap.data() } : null;
-
-    // fallback: pelo cache carregado (evita query extra)
-    if (!data && allPublished.length) {
-      data = allPublished.find(p => (p.slug === clean) || (p.id === clean)) || null;
-    }
-
-    if (!data) {
-      postTitle.textContent = "Post não encontrado";
-      postContent.innerHTML = "<p>Esse post não existe ou não está acessível.</p>";
-      return;
-    }
-
-    // público só vê published
-    if (!isModerator && data.status !== "published") {
-      postTitle.textContent = "Indisponível";
-      postContent.innerHTML = "<p>Esse post ainda não está publicado.</p>";
-      return;
-    }
-
-    postTitle.textContent = data.title || "Sem título";
-    postExcerpt.textContent = data.excerpt || "";
-
-    const dt = formatDate(data.publishedAt) || formatDate(data.updatedAt) || "";
-    const tags = Array.isArray(data.tags) ? data.tags : [];
-    postMeta.textContent = `${dt ? "📅 " + dt : "📌"}${tags.length ? " • 🏷️ " + tags.join(", ") : ""}`;
-
-    if (data.coverUrl) {
-      postCoverImg.src = data.coverUrl;
-      postCoverImg.alt = data.title || "Capa";
-      show(postCover, true);
-    }
-
-    postContent.innerHTML = data.contentHtml || "<p>(Sem conteúdo)</p>";
-    buildTOC();
-    setupReadProgress();
-  } catch (err) {
-    console.error(err);
-    postTitle.textContent = "Erro ao carregar";
-    postContent.innerHTML = "<p>Ocorreu um erro ao carregar o post.</p>";
-  }
-}
-
-function buildTOC() {
-  toc.innerHTML = "";
-  const headers = postContent.querySelectorAll("h2, h3");
-  if (!headers.length) {
-    toc.innerHTML = "<li>Sem seções</li>";
-    return;
-  }
-  headers.forEach((h, i) => {
-    if (!h.id) h.id = `sec-${i}-${slugify(h.textContent)}`;
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.href = `#${h.id}`;
-    a.textContent = h.textContent;
-    li.appendChild(a);
-    toc.appendChild(li);
-  });
-}
-
-function setupReadProgress() {
-  const onScroll = () => {
-    const docH = document.documentElement.scrollHeight - window.innerHeight;
-    const y = window.scrollY;
-    const pct = docH > 0 ? Math.min(100, Math.max(0, (y / docH) * 100)) : 0;
-    readProgress.style.width = pct + "%";
-  };
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-}
-
-backToListBtn?.addEventListener("click", (e) => {
-  e.preventDefault();
-  location.hash = "";
-});
-
-function usernameToEmail(username) {
-  const u = safeText(username).trim().toLowerCase();
-  if (!ALLOWED_USERNAMES.has(u)) return null;
-  return `${u}@${USERNAME_TO_EMAIL_DOMAIN}`;
-}
-
-async function refreshAdminUI() {
-  if (isModerator) {
-    show(loginBox, false);
-    show(adminBox, true);
-    await loadAdminList();
-    adminMsg.textContent = "Pronto.";
-  } else {
-    show(loginBox, true);
-    show(adminBox, false);
-    loginMsg.textContent = "";
+  .skeleton::after{ animation:none !important; }
+  .post-card, .post-card:hover, .blog-btn, .blog-btn:hover{
+    transition:none !important;
+    transform:none !important;
   }
 }
 
-loginBtn?.addEventListener("click", async () => {
-  loginMsg.textContent = "Entrando…";
-  const email = usernameToEmail(loginUser.value);
-  if (!email) { loginMsg.textContent = "Usuário inválido."; return; }
-  try {
-    await signInWithEmailAndPassword(auth, email, loginPass.value);
-    loginMsg.textContent = "";
-  } catch (err) {
-    console.error(err);
-    loginMsg.textContent = "Falha no login.";
+@media (max-width: 980px){
+  .blog-shell, .post-shell{
+    padding-left: 20px;
+    padding-right: 20px;
   }
-});
-
-logoutBtn?.addEventListener("click", async () => {
-  await signOut(auth);
-  location.hash = "";
-});
-
-newBtn?.addEventListener("click", () => {
-  currentEditingId = null;
-  aTitle.value = "";
-  aSlug.value = "";
-  aExcerpt.value = "";
-  aCoverUrl.value = "";
-  aTags.value = "";
-  aStatus.value = "draft";
-  aContent.value = "<h2>Título</h2>\n<p>Escreva aqui…</p>";
-  adminMsg.textContent = "";
-});
-
-aTitle?.addEventListener("input", () => {
-  if (!aSlug.value.trim()) aSlug.value = slugify(aTitle.value);
-});
-
-saveBtn?.addEventListener("click", async () => {
-  if (!isModerator) return;
-
-  const title = safeText(aTitle.value).trim();
-  const slug = slugify(aSlug.value || title);
-  const excerpt = safeText(aExcerpt.value).trim();
-  const coverUrl = safeText(aCoverUrl.value).trim();
-  const tags = tagsFromInput(aTags.value);
-  const status = aStatus.value;
-  const contentHtml = safeText(aContent.value);
-
-  if (!title || !slug) { adminMsg.textContent = "Preencha Título e Slug."; return; }
-
-  const id = currentEditingId || slug;
-  const payload = {
-    title, slug, excerpt, coverUrl, tags, status, contentHtml,
-    updatedAt: serverTimestamp(),
-  };
-
-  try {
-    const ref = doc(db, POSTS_COL, id);
-    const existing = await getDoc(ref);
-
-    if (!existing.exists()) {
-      payload.createdAt = serverTimestamp();
-      if (status === "published") payload.publishedAt = serverTimestamp();
-      await setDoc(ref, payload);
-    } else {
-      // se publicar e não tinha publishedAt
-      if (status === "published") {
-        const cur = existing.data();
-        if (!cur.publishedAt) payload.publishedAt = serverTimestamp();
-      }
-      await updateDoc(ref, payload);
-    }
-
-    currentEditingId = id;
-    adminMsg.textContent = "Salvo.";
-    await loadAdminList();
-
-    // recarrega público
-    allPublished = [];
-    visibleCount = 9;
-    if (parseRoute().name === "list") await ensurePublicLoaded();
-  } catch (err) {
-    console.error(err);
-    adminMsg.textContent = "Erro ao salvar (Rules).";
-  }
-});
-
-deleteBtn?.addEventListener("click", async () => {
-  if (!isModerator || !currentEditingId) return;
-  const ok = confirm("Excluir este post?");
-  if (!ok) return;
-
-  try {
-    await deleteDoc(doc(db, POSTS_COL, currentEditingId));
-    adminMsg.textContent = "Excluído.";
-    currentEditingId = null;
-    await loadAdminList();
-    allPublished = [];
-    visibleCount = 9;
-  } catch (err) {
-    console.error(err);
-    adminMsg.textContent = "Erro ao excluir.";
-  }
-});
-
-async function loadAdminList() {
-  adminList.innerHTML = "Carregando…";
-  try {
-    const snap = await getDocs(query(collection(db, POSTS_COL), limit(100)));
-    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    // ordena no client
-    items.sort((a,b) => {
-      const am = toMillisMaybe(a.updatedAt) || toMillisMaybe(a.createdAt) || 0;
-      const bm = toMillisMaybe(b.updatedAt) || toMillisMaybe(b.createdAt) || 0;
-      return bm - am;
-    });
-
-    adminList.innerHTML = "";
-    if (!items.length) { adminList.textContent = "Sem posts."; return; }
-
-    items.forEach(p => {
-      const row = document.createElement("div");
-      row.className = "blog-pill";
-      row.style.justifyContent = "space-between";
-      row.style.cursor = "pointer";
-
-      const left = document.createElement("div");
-      left.style.display = "flex";
-      left.style.flexDirection = "column";
-      left.style.gap = "2px";
-
-      const t = document.createElement("strong");
-      t.textContent = p.title || p.id;
-
-      const s = document.createElement("span");
-      s.style.color = "rgba(11,18,32,.65)";
-      s.style.fontSize = "12px";
-      s.textContent = `${p.status || "draft"} • ${p.slug || p.id}`;
-
-      left.appendChild(t);
-      left.appendChild(s);
-
-      row.appendChild(left);
-      row.addEventListener("click", () => {
-        currentEditingId = p.id;
-        aTitle.value = p.title || "";
-        aSlug.value = p.slug || p.id || "";
-        aExcerpt.value = p.excerpt || "";
-        aCoverUrl.value = p.coverUrl || "";
-        aTags.value = Array.isArray(p.tags) ? p.tags.join(", ") : "";
-        aStatus.value = p.status || "draft";
-        aContent.value = p.contentHtml || "";
-        adminMsg.textContent = "";
-      });
-
-      adminList.appendChild(row);
-    });
-  } catch (err) {
-    console.error(err);
-    adminList.textContent = "Erro ao listar.";
-  }
+  .blog-hero-inner{ grid-template-columns: 1fr; }
+  .post-wrap{ grid-template-columns: 1fr; }
+  .aside{ position:relative; top:0; }
+  .article-body{ max-width: none; }
 }
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    isModerator = false;
-  } else {
-    const allowedEmails = [...ALLOWED_USERNAMES].map(u => `${u}@${USERNAME_TO_EMAIL_DOMAIN}`);
-    isModerator = allowedEmails.includes(user.email);
-  }
-  const r = parseRoute();
-  if (r.name === "admin") refreshAdminUI();
-});
-
-searchInput?.addEventListener("input", () => {
-  searchTerm = safeText(searchInput.value).trim().toLowerCase();
-  visibleCount = 9;
-  renderGrid();
-});
-
-loadMoreBtn?.addEventListener("click", () => {
-  visibleCount += 9;
-  renderGrid();
-});
-
-go(parseRoute());
