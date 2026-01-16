@@ -1,0 +1,111 @@
+*{box-sizing:border-box}
+body{margin:0;font-family:Montserrat,Arial;background:#f8fafc;color:#111}
+.top{display:flex;justify-content:space-between;align-items:center;padding:20px 40px;background:white;box-shadow:0 2px 8px rgba(0,0,0,.05);position:sticky;top:0;z-index:10}
+.logo{height:80px}
+nav a{margin-left:20px;text-decoration:none;color:#1e3a8a;font-weight:600}
+.hero{display:flex;align-items:center;justify-content:space-between;padding:80px 10%;background:linear-gradient(120deg,#dbeafe,#fff);flex-wrap:wrap}
+.hero-text{max-width:500px}
+.hero h1{font-size:48px;color:#1e3a8a}
+.cta{display:inline-block;margin-top:20px;background:#dc2626;color:white;padding:14px 26px;border-radius:999px;text-decoration:none;font-weight:600}
+.hero-img{max-width:400px;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1)}
+.section{padding:80px 10%;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:30px}
+.card{background:white;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.05);padding:20px;transition:.3s}
+.card:hover{transform:translateY(-6px)}
+.card img{width:100%;border-radius:14px}
+footer{background:#1e3a8a;color:white;text-align:center;padding:40px;margin-top:40px}
+.menu {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 30px;
+}
+.photo-carousel {
+  overflow: hidden;
+  width: 100%;
+  margin: 30px 0;
+}
+
+.photo-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: scroll 25s linear infinite;
+}
+
+.photo-track img {
+  width: 250px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (max-width: 768px) {
+
+  header {
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .hero {
+    padding: 40px 20px;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+  }
+
+  .container {
+    padding: 20px 15px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-track img {
+    width: 200px;
+    height: 130px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .news-grid {
+    gap: 14px;
+  }
+
+  .news-grid .card {
+    min-width: 220px;
+  }
+
+  #cal-grid .day {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  footer {
+    font-size: 12px;
+    padding: 20px 10px;
+  }
+}
