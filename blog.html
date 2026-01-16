@@ -145,10 +145,19 @@
               <input id="aTitle" type="text" placeholder="Título do post" />
             </div>
 
-            <div class="blog-search" style="border-radius:18px;">
-              <span aria-hidden="true">🔗</span>
-              <input id="aSlug" type="text" placeholder="Slug (ex: como-aprender-ingles)" />
-            </div>
+            <div class="blog-search" style="grid-column: 1 / -1; border-radius:18px; align-items:flex-start;">
+  <span aria-hidden="true" style="margin-top:2px;">🖼️</span>
+  <div style="width:100%; display:flex; flex-direction:column; gap:10px;">
+    <input id="aCoverFile" type="file" accept="image/*" />
+    <div id="coverPreviewWrap" style="display:none; border-radius:16px; overflow:hidden; border:1px solid rgba(2,6,23,.08);">
+      <img id="coverPreviewImg" alt="Prévia da capa" style="width:100%; height:220px; object-fit:cover; display:block;">
+    </div>
+    <p style="margin:0; font-size:12px; color:rgba(11,18,32,.6);">
+      A capa é enviada pro Firebase Storage e a URL é salva automaticamente no post.
+    </p>
+  </div>
+</div>
+
 
             <div class="blog-search" style="grid-column: 1 / -1; border-radius:18px;">
               <span aria-hidden="true">🧾</span>
