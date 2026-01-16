@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contato | Fuxico em Inglês</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="tabs.css" />
+</head>
+<body class="page">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html" aria-label="Voltar para a página inicial">
+        <span class="brand-badge" aria-hidden="true"></span>
+        <span>Fuxico em Inglês</span>
+      </a>
+
+      <nav class="menu" aria-label="Menu">
+        <a href="index.html">Início</a>
+        <a href="blog.html">Blog</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="formatos.html">Formatos</a>
+        <a href="contato.html">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-card reveal">
+        <div class="pill">BORA CONVERSAR</div>
+        <h1>Contato que não parece formulário 😄</h1>
+        <p class="muted">
+          Aqui é simples: você manda uma mensagem e a gente combina o melhor jeito de te colocar pra fuxicar.
+          (Por enquanto esse form é "fake" só pra efeito visual — depois a gente liga no Firebase juntos.)
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="index.html">Voltar ao início</a>
+          <a class="btn btn-ghost" href="blog.html">Ver o blog</a>
+        </div>
+      </div>
+
+      <div class="hero-art reveal">
+        <div class="hero-blob" aria-hidden="true"></div>
+        <div class="stat">
+          <div class="k">Resposta rápida</div>
+          <div class="v">até 24h</div>
+        </div>
+        <div class="stat">
+          <div class="k">Clima</div>
+          <div class="v">zero julgamento</div>
+        </div>
+        <div class="stat">
+          <div class="k">Foco</div>
+          <div class="v">conversação</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card reveal" style="grid-column: span 7;">
+        <h2>Mensagem</h2>
+        <p class="muted">Deixa seu nome e sua dúvida. Quando a gente integrar no Firebase, isso já vira envio real.</p>
+
+        <form data-fake>
+          <div class="form-row">
+            <label>
+              <span class="muted">Seu nome</span>
+              <input name="name" placeholder="Ex: Maria" required />
+            </label>
+            <label>
+              <span class="muted">E-mail</span>
+              <input name="email" type="email" placeholder="voce@email.com" required />
+            </label>
+          </div>
+          <label>
+            <span class="muted">Mensagem</span>
+            <textarea name="msg" placeholder="Quero participar, como funciona?" required></textarea>
+          </label>
+          <button class="btn" type="submit">Enviar</button>
+          <p class="hint">Dica: depois a gente substitui por envio real (Firestore + regras + spam guard).</p>
+        </form>
+      </div>
+
+      <div class="card reveal" style="grid-column: span 5;">
+        <h2>Atalhos</h2>
+        <p class="muted">Se preferir, use um desses caminhos.</p>
+        <div class="chips">
+          <span class="chip">WhatsApp (depois)</span>
+          <span class="chip">Instagram (depois)</span>
+          <span class="chip">E-mail (depois)</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>Onde rola?</h3>
+        <p class="muted">Online, via Google Meet — sem instalação, só clicar e entrar.</p>
+        <a class="btn btn-ghost" href="http://meet.google.com/hav-czam-ygp" target="_blank" rel="noopener">Abrir Meet</a>
+      </div>
+    </section>
+
+    <section class="cta-band reveal">
+      <div>
+        <h2>Quer que eu deixe isso 100% funcional?</h2>
+        <p class="muted">Na próxima etapa a gente liga esse form no Firebase (com proteção anti-spam).</p>
+      </div>
+      <a class="btn" href="blog.html">Ok, bora!</a>
+    </section>
+  </main>
+
+  <div class="toast" role="status" aria-live="polite">
+    <strong>Mensagem enviada (demo) ✅</strong>
+    <div class="muted">Depois a gente conecta isso no Firebase de verdade.</div>
+  </div>
+
+  <footer class="footer">
+    <div>© 2026 Fuxico em Inglês</div>
+    <div class="muted">feito com carinho — e um tanto de animação ✨</div>
+  </footer>
+
+  <script src="tabs.js"></script>
+</body>
+</html>
