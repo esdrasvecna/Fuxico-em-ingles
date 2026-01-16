@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post • Fuxico em Inglês</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="blog.css" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="read-progress" id="readProgress" aria-hidden="true"></div>
+
+<header class="top">
+  <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <img src="assets/logo.png" class="logo" alt="Fuxico em Inglês">
+  </a>
+
+  <nav class="menu">
+    <a href="index.html">Início</a>
+    <a href="blog.html">Blog</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="formatos.html">Formatos</a>
+    <a href="contato.html">Contato</a>
+  </nav>
+</header>
+
+<main class="post-shell section">
+  <div class="post-wrap">
+
+    <article class="article reveal" id="article">
+      <header class="article-head">
+        <div class="post-meta" id="postMeta"><span>Carregando…</span></div>
+
+        <h1 id="postTitle">Post</h1>
+        <p class="sub" id="postExcerpt"></p>
+
+        <div class="article-cover" id="postCover" style="display:none;">
+          <img id="postCoverImg" alt="" />
+        </div>
+      </header>
+
+      <div class="article-body" id="postContent">
+        <p>Carregando conteúdo…</p>
+      </div>
+    </article>
+
+    <aside class="aside">
+      <div class="aside-card reveal">
+        <h4>Sumário</h4>
+        <ol class="toc" id="toc"></ol>
+      </div>
+
+      <div class="aside-card reveal">
+        <h4>Voltar</h4>
+        <p class="aside-text">Mais posts e filtros estão no blog.</p>
+        <a class="cta aside-cta" href="blog.html">Voltar ao Blog</a>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<footer id="contato">
+  <p>© 2026 Fuxico em Inglês</p>
+  <p>desenvolvido por Agência StudioMind</p>
+</footer>
+
+<script type="module" src="blog.js"></script>
+</body>
+</html>
