@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog • Fuxico em Inglês</title>
+
+  <!-- Padrão do site -->
+  <link rel="stylesheet" href="style.css" />
+  <!-- Blog (só complementa sem brigar com style.css) -->
+  <link rel="stylesheet" href="blog.css" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="top">
+  <a href="index.html" style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+    <img src="assets/logo.png" class="logo" alt="Fuxico em Inglês">
+  </a>
+
+  <!-- Menu igual ao padrão das novas abas -->
+  <nav class="menu">
+    <a href="index.html">Início</a>
+    <a href="blog.html" aria-current="page">Blog</a>
+    <a href="sobre.html">Sobre</a>
+    <a href="formatos.html">Formatos</a>
+    <a href="contato.html">Contato</a>
+  </nav>
+</header>
+
+<main class="blog-shell">
+
+  <!-- Hero no “jeito do site”: simples, elegante, sem parecer outra marca -->
+  <section class="section blog-hero reveal" id="hero">
+    <div class="blog-hero-inner">
+      <div class="blog-hero-left">
+        <h1>Blog do Fuxico</h1>
+        <p class="blog-lead">
+          Dicas rápidas, temas de conversação e curiosidades — pra ler leve, praticar e voltar pro fuxico com ideias novas.
+        </p>
+
+        <div class="blog-cta-row">
+          <div class="blog-search" role="search">
+            <span aria-hidden="true">🔎</span>
+            <input id="searchInput" type="search" placeholder="Buscar por título ou conteúdo..." autocomplete="off" />
+          </div>
+
+          <div class="blog-pill" title="Filtro">
+            <span aria-hidden="true">🏷️</span>
+            <strong id="activeTag">Tudo</strong>
+          </div>
+        </div>
+
+        <div class="blog-chips" id="chipRow" aria-label="Filtrar por tag"></div>
+      </div>
+
+      <!-- Card usando o padrão do site -->
+      <div class="blog-hero-right">
+        <div class="card blog-hero-card">
+          <h3 class="blog-hero-card-title">Novidades toda semana</h3>
+          <p class="blog-hero-card-text">
+            Assim que você publicar no Firestore, os posts aparecem aqui automaticamente (com filtro e busca).
+          </p>
+          <a class="cta blog-hero-card-cta" href="index.html">Voltar para o site</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Lista de posts">
+    <div class="blog-grid" id="postsGrid">
+      <!-- skeletons (loading) -->
+      <div class="skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line w40"></div><div class="sk-line w85"></div><div class="sk-line w65"></div></div></div>
+      <div class="skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line w40"></div><div class="sk-line w85"></div><div class="sk-line w65"></div></div></div>
+      <div class="skeleton"><div class="sk-cover"></div><div class="sk-body"><div class="sk-line w40"></div><div class="sk-line w85"></div><div class="sk-line w65"></div></div></div>
+    </div>
+
+    <div class="blog-actions">
+      <button class="blog-btn" id="loadMoreBtn" type="button" disabled>Carregando…</button>
+    </div>
+
+    <p id="emptyState" class="blog-empty" style="display:none;">
+      Ainda não tem posts publicados. Quando você criar documentos na coleção <strong>posts</strong> com
+      <strong>status = "published"</strong>, eles aparecem aqui.
+    </p>
+  </section>
+
+</main>
+
+<footer id="contato">
+  <p>© 2026 Fuxico em Inglês</p>
+  <p>desenvolvido por Agência StudioMind</p>
+</footer>
+
+<script type="module" src="blog.js"></script>
+</body>
+</html>
